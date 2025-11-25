@@ -840,6 +840,20 @@ def main():
         
         wb_degraded.save(DEGRADED_OUTPUT_FILE)
         print(f"  💾 Degraded responses report saved: {DEGRADED_OUTPUT_FILE}")
+    else:
+        # Create a minimal report even when there are no degraded responses so CI/artifact
+        # steps that expect the file won't fail. This file will contain a single sheet
+        # with a message indicating no degradations were found.
+        print("\nNo degraded responses found — creating empty report for records.")
+        wb_degraded = openpyxl.Workbook()
+        ws = wb_degraded.active
+        ws.title = 'Summary'
+        ws.append(["Status", "Message"]) 
+        ws.append(["OK", "No degraded responses found in this run."])
+        # basic styling
+        ws.row_dimensions[1].height = 20
+        wb_degraded.save(DEGRADED_OUTPUT_FILE)
+        print(f"  💾 Empty degraded responses report saved: {DEGRADED_OUTPUT_FILE}")
     
     # Upload to SharePoint
     sharepoint_url = None
