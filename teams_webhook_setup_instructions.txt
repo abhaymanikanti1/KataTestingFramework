@@ -1,0 +1,188 @@
+================================================================================
+TEAMS WEBHOOK SETUP INSTRUCTIONS
+For Power Automate Flow: API Quality Monitor Alerts
+================================================================================
+
+CURRENT ISSUE:
+--------------
+The webhook receives data (HTTP 202 status) but the Power Automate workflow
+is not posting messages to Teams. The workflow needs to be reconfigured.
+
+WEBHOOK URL:
+------------
+https://default0f634ac3b39f41a683ba8f107876c6.92.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/338930b654414d3fad97006b24eba22a/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=F2Sc96VixuuckIZy1e3Djtcx4JnOGmHDoQfleymy5-U
+
+TARGET:
+-------
+Post messages to: "Kata Testers" group chat in Teams
+
+SAMPLE DATA SENT TO WEBHOOK:
+-----------------------------
+{
+  "content": {
+    "type": "AdaptiveCard",
+    "body": [
+      {
+        "type": "TextBlock",
+        "size": "Large",
+        "weight": "Bolder",
+        "text": "🧪 Test Alert from API Quality Monitor",
+        "wrap": true,
+        "color": "Attention"
+      },
+      {
+        "type": "TextBlock",
+        "text": "This is a test message...",
+        "wrap": true
+      }
+    ],
+    "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+    "version": "1.4"
+  },
+  "title": "🚨 Quality Alert: 3 Degraded Responses",
+  "message": "Full message text here...",
+  "totalIssues": 3,
+  "highSeverity": 1,
+  "mediumSeverity": 2,
+  "reportFile": "Degraded_Responses_Report.xlsx",
+  "timestamp": "2025-11-21 12:00:00"
+}
+
+================================================================================
+FIX OPTION 1: SIMPLE TEXT MESSAGE (RECOMMENDED - EASIEST)
+================================================================================
+
+1. Go to Power Automate (flow.microsoft.com)
+2. Find the workflow (search for the webhook URL or "API Quality Monitor")
+3. Click Edit
+
+4. DELETE the current "Post card in a chat or channel" action
+
+5. ADD NEW ACTION:
+   - Click "+ New step"
+   - Search for: "Post message in a chat or channel"
+   - Select it (NOT "Post card" - just "Post message")
+
+6. CONFIGURE:
+   - Post as: Flow bot
+   - Post in: Group chat
+   - Group chat: Kata Testers
+   - Message: Click in the field, then click "Add dynamic content"
+     Add these fields in order:
+       1. title
+       2. Press Enter twice (for blank lines)
+       3. message
+
+7. SAVE the flow
+
+8. TEST using the test_teams_alert.py script
+
+================================================================================
+FIX OPTION 2: ADAPTIVE CARD (BETTER LOOKING BUT MORE COMPLEX)
+================================================================================
+
+1. Go to Power Automate (flow.microsoft.com)
+2. Find and Edit the workflow
+
+3. In the "Post card in a chat or channel" action:
+   - Post as: Flow bot
+   - Post in: Group chat
+   - Group chat: Kata Testers
+   
+4. In the "Adaptive Card" field, DELETE the current content (which shows "content")
+
+5. PASTE THIS JSON directly in the Adaptive Card field:
+
+{
+  "type": "AdaptiveCard",
+  "body": [
+    {
+      "type": "TextBlock",
+      "size": "Large",
+      "weight": "Bolder",
+      "text": "@{triggerBody()?['title']}",
+      "wrap": true,
+      "color": "Attention"
+    },
+    {
+      "type": "TextBlock",
+      "text": "@{triggerBody()?['message']}",
+      "wrap": true
+    },
+    {
+      "type": "FactSet",
+      "facts": [
+        {
+          "title": "Total Issues:",
+          "value": "@{triggerBody()?['totalIssues']}"
+        },
+        {
+          "title": "High Severity:",
+          "value": "@{triggerBody()?['highSeverity']}"
+        },
+        {
+          "title": "Medium Severity:",
+          "value": "@{triggerBody()?['mediumSeverity']}"
+        },
+        {
+          "title": "Report File:",
+          "value": "@{triggerBody()?['reportFile']}"
+        }
+      ]
+    }
+  ],
+  "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+  "version": "1.4"
+}
+
+6. SAVE the flow
+
+7. TEST using the test_teams_alert.py script
+
+================================================================================
+TESTING THE FIX
+================================================================================
+
+After making changes, run this command to test:
+
+    python test_teams_alert.py
+
+Expected result:
+- Script shows: "Status Code: 202" and "SUCCESS!"
+- Within 5-10 seconds, a message appears in the "Kata Testers" Teams chat
+
+If the message doesn't appear:
+- Check the Power Automate run history to see error details
+- Verify the "Kata Testers" chat exists and the bot has permissions
+- Try Option 1 (simple text message) if Option 2 doesn't work
+
+================================================================================
+TROUBLESHOOTING
+================================================================================
+
+1. Workflow shows as "Failed" in run history:
+   - Check the error message in Power Automate
+   - Verify bot has permission to post to "Kata Testers" chat
+   - Make sure "Kata Testers" is a group chat (not a channel)
+
+2. Workflow shows as "Succeeded" but no message appears:
+   - Check if messages are going to a different chat
+   - Verify the group chat name is exactly "Kata Testers"
+   - Try mentioning yourself in the message field to test
+
+3. Still having issues:
+   - Export the flow and share the JSON
+   - Check if there are any filters/conditions in the workflow
+   - Verify the webhook URL hasn't changed
+
+================================================================================
+CONTACT
+================================================================================
+
+If you need help:
+- Run test_teams_alert.py and share the output
+- Share screenshot of the Power Automate workflow
+- Check Power Automate run history and share error messages
+
+Owner: Abhay Manikanti (abhay.manikanti@fortive.com)
+================================================================================
