@@ -48,15 +48,23 @@ jobs:
           # Ensure the script runs full-suite; TEST_LIMIT is None by default in the script.
           python integrated_test_comparison.py
 
-      - name: Upload generated reports (always)
+      - name: List workspace (debug)
+        run: |
+          echo "Listing workspace after script run"
+          pwd
+          ls -la
+          echo "Looking for .xlsx files"
+          ls -la **/*.xlsx || true
+
+      - name: Upload any generated Excel reports (globs)
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: kata-reports-${{ github.run_id }}
           path: |
+            **/*.xlsx
             Degraded_Responses_Report.xlsx
-            Direct Query Master List V_Test.xlsx
-            TEST_Degraded_Responses_Report.xlsx
+            Direct*Query*Master*List*.xlsx
           retention-days: 14
 
       - name: Notify Teams on failure (optional)
