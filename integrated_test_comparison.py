@@ -479,14 +479,17 @@ def process_sheet_with_comparison(sheet_number, config):
     
     print(f"🌐 API: {api_url}")
     print(f"🤖 Agent: {agent_id}")
-    print(f"⚠️  TEST MODE: First {TEST_LIMIT} rows only")
+    if TEST_LIMIT is None:
+        print(f"⚠️  TEST MODE: Full run (no row limit)")
+    else:
+        print(f"⚠️  TEST MODE: First {TEST_LIMIT} rows only")
     
     processed = 0
     successful = 0
     degraded_responses = []
     
     for row_idx, row in enumerate(ws_new.iter_rows(min_row=2), 1):
-        if processed >= TEST_LIMIT:
+        if TEST_LIMIT is not None and processed >= TEST_LIMIT:
             break
         
         prompt_cell = row[1]
@@ -498,7 +501,10 @@ def process_sheet_with_comparison(sheet_number, config):
             continue
         
         processed += 1
-        print(f"\n[{processed}/{TEST_LIMIT}] Row {row_idx}:")
+        if TEST_LIMIT is None:
+            print(f"\n[{processed}] Row {row_idx}:")
+        else:
+            print(f"\n[{processed}/{TEST_LIMIT}] Row {row_idx}:")
         print(f"  📝 Prompt: {str(prompt)[:60]}...")
         
         # Get benchmark response
@@ -754,7 +760,10 @@ def main():
     print(f"📊 Benchmark File: {BENCHMARK_FILE}")
     print(f"📊 New Output File: {NEW_OUTPUT_FILE}")
     print(f"📊 Degraded Report: {DEGRADED_OUTPUT_FILE}")
-    print(f"🔢 Rows per sheet: {TEST_LIMIT}")
+    if TEST_LIMIT is None:
+        print(f"🔢 Rows per sheet: Full run (no limit)")
+    else:
+        print(f"🔢 Rows per sheet: {TEST_LIMIT}")
     print(f"📋 Sheets to process: {len(SHEET_CONFIGS)}")
     print("="*70)
     
