@@ -1,0 +1,30 @@
+# Docker Compose for local development and testing
+# Run: docker-compose up
+
+version: '3.8'
+
+services:
+  api:
+    build: .
+    container_name: kata-api
+    ports:
+      - "8000:8000"
+    environment:
+      - AZURE_STORAGE_CONNECTION_STRING=${AZURE_STORAGE_CONNECTION_STRING}
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+# Usage:
+# 1. Set environment variable:
+#    export AZURE_STORAGE_CONNECTION_STRING="your-connection-string"
+#
+# 2. Build and run:
+#    docker-compose up --build
+#
+# 3. Access API:
+#    http://localhost:8000/docs

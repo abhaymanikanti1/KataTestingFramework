@@ -1,0 +1,63 @@
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Excel files (generated)
+*.xlsx
+!compare.xlsx
+
+# Auth/Credentials
+playwright_auth/
+cookies.json
+.env
+*.pem
+*.key
+
+# Downloads
+TableauPublic-*.dmg
+
+# Docker
+.dockerignore
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Deployment artifacts
+*.zip
+deploy/
+azure_deploy.zip
+app_deploy.zip
+final_deploy.zip
+deploy.zip
+.env.local
+GITHUB_SECRETS.md

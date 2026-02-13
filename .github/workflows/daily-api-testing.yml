@@ -1,0 +1,105 @@
+name: Daily API Testing & Deployment
+
+on:
+  schedule:
+    # Run daily at 9 AM UTC (adjust timezone as needed)
+    - cron: '0 9 * * *'
+  workflow_dispatch:  # Allow manual trigger from GitHub Actions UI
+
+env:
+  PYTHON_VERSION: '3.11'
+
+jobs:
+  test-and-deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+        cache: 'pip'
+        
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        
+    - name: Run API Testing & Comparison
+      env:
+        API_BASE_URL: ${{ secrets.API_BASE_URL }}
+        EMAIL_ID: ${{ secrets.EMAIL_ID }}
+        API_KEY: ${{ secrets.API_KEY }}
+        SESSION_ID: ${{ secrets.SESSION_ID }}
+        AZURE_STORAGE_CONNECTION_STRING: ${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}
+        TEAMS_WEBHOOK_URL: ${{ secrets.TEAMS_WEBHOOK_URL }}
+        SHAREPOINT_SITE_URL: ${{ secrets.SHAREPOINT_SITE_URL }}
+        SHAREPOINT_CLIENT_ID: ${{ secrets.SHAREPOINT_CLIENT_ID }}
+        SHAREPOINT_CLIENT_SECRET: ${{ secrets.SHAREPOINT_CLIENT_SECRET }}
+      run: |
+        echo "=================================================="
+        echo "🧪 Running KATA API Tests"
+        echo "=================================================="
+        python integrated_test_comparison.py
+        
+    - name: Upload test results as artifact
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: test-results-${{ github.run_number }}
+        path: |
+          Degraded_Responses_Report.xlsx
+          Direct Query Master List V_Test.xlsx
+        retention-days: 30
+        
+    - name: Check test results
+      if: always()
+      run: |
+        if [ -f "Degraded_Responses_Report.xlsx" ]; then
+          echo "✅ Test report generated successfully"
+          ls -lh Degraded_Responses_Report.xlsx
+        else
+          echo "⚠️ No degraded responses report generated"
+        fi
+        
+    - name: Notify on failure
+      if: failure()
+      run: |
+        echo "❌ Testing workflow failed"
+        echo "Check the logs above for details"
+
+    - name: Deploy API to Azure App Service
+      uses: azure/webapps-deploy@v2
+      with:
+        app-name: 'kata-api-v2'
+        publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+        package: .
+        
+    - name: Verify API Deployment
+      run: |
+        echo "🔍 Waiting for API to start..."
+        sleep 30
+        echo "Testing API health endpoint..."
+        curl -f https://kata-api-v2.azurewebsites.net/api/health || echo "⚠️ API health check failed"
+
+    - name: Summary
+      if: success()
+      run: |
+        echo "=================================================="
+        echo "✅ Daily API Testing & Deployment Complete"
+        echo "=================================================="
+        echo ""
+        echo "Results uploaded to:"
+        echo "  - Azure Blob Storage: kata-reports/degraded_responses.xlsx"
+        echo "  - Microsoft Teams: Alert sent"
+        echo "  - GitHub Artifacts: Available for 30 days"
+        echo ""
+        echo "API Deployment:"
+        echo "  - URL: https://kata-api-v2.azurewebsites.net"
+        echo "  - Health Check: https://kata-api-v2.azurewebsites.net/api/health"
+        echo "  - Data Endpoint: https://kata-api-v2.azurewebsites.net/api/degraded-responses"
+        echo "  - API Docs: https://kata-api-v2.azurewebsites.net/docs"
+        echo "=================================================="
