@@ -47,7 +47,7 @@ jobs:
         
     - name: Upload results
       if: always()
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: manual-test-results-${{ github.run_number }}
         path: |
