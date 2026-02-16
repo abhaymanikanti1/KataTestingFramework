@@ -61,3 +61,4 @@ final_deploy.zip
 deploy.zip
 .env.local
 GITHUB_SECRETS.md
+azure_publish_profile.xml
