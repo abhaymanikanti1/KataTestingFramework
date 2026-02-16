@@ -56,7 +56,7 @@ jobs:
         retention-days: 30
 
     - name: Deploy API to Azure App Service
-      if: secrets.AZURE_WEBAPP_PUBLISH_PROFILE != ''
+      if: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE != '' }}
       uses: azure/webapps-deploy@v2
       with:
         app-name: 'kata-api-v2'
