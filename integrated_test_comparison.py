@@ -33,7 +33,7 @@ DEGRADED_OUTPUT_FILE = "Degraded_Responses_Report.xlsx"  # Bad responses
 TEST_LIMIT = None  # Set to None for full processing
 
 # --- Base API Configuration ---
-API_BASE_URL = "https://container-app-ui-stage.purplesky-e0183d2f.eastus.azurecontainerapps.io/"
+API_BASE_URL = "https://container-app-ui.delightfulpebble-0babe36f.eastus.azurecontainerapps.io/"
 EMAIL_ID = "abhay.manikanti@fortive.com"
 API_KEY = "d7e8f9b6-92a4-48e2-a0cd-f81c993f29c1"
 
